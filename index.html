@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tom — Product Manager · The River CV</title>
+<style>
+  :root {
+    --paper: #F2ECD8;
+    --paper-soft: #E8E1C7;
+    --paper-deep: #D9CFAE;
+    --ink: #16332A;
+    --ink-dim: #5A7264;
+    --line: #C9BE9C;
+    --dot: #4A6650;
+    --river-deep: #0E4C44;
+    --river: #1F8A78;
+    --river-hi: #2FB89F;
+    --clay: #C9442A;
+    --gold: #A3781D;
+    --radius: 14px;
+    --maxw: 1240px;
+    --bar-h: 96px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Archivo", system-ui, -apple-system, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    overflow-x: hidden;
+    position: relative;
+    padding-bottom: var(--bar-h);
+  }
+  ::selection { background: var(--clay); color: var(--paper); }
+  a { color: inherit; }
+  button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; }
+
+  /* Background map: terrain dots + one SVG (delta + river) — both scroll with the page */
+  #terrain { position: absolute; top: 0; left: 0; z-index: 0; pointer-events: none; }
+  #mapSvg { position: absolute; top: 0; left: 0; width: 100%; z-index: 1; pointer-events: none; overflow: visible; }
+  #mapOverlay { position: absolute; top: 0; left: 0; width: 100%; z-index: 5; pointer-events: none; }
+  #mapOverlay > * { pointer-events: auto; }
+
+  .page { position: relative; z-index: 3; }
+
+  .display { font-family: "Fraunces", Georgia, serif; font-weight: 500; letter-spacing: -0.01em; }
+  .mono { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-dim); }
+  .mono .tick { color: var(--clay); }
+
+  header { position: relative; z-index: 8; max-width: var(--maxw); margin: 0 auto; padding: 26px 28px 0; display: flex; align-items: baseline; justify-content: flex-end; gap: 16px; flex-wrap: wrap; }
+  nav { display: flex; gap: 22px; flex-wrap: wrap; }
+  nav a { font-size: 13.5px; color: var(--ink-dim); text-decoration: none; border-bottom: 1px solid transparent; padding-bottom: 2px; }
+  nav a:hover, nav a:focus-visible { color: var(--ink); border-bottom-color: var(--clay); }
+
+  /* Hero — the delta mouth sits behind. Two columns: highlights (main focus) left, widget right. */
+  .hero {
+    position: relative; z-index: 3; min-height: calc(100vh - 76px); padding: 24px 28px 40px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) clamp(240px, 24vw, 360px) clamp(320px, 27vw, 400px);
+    gap: 40px; align-items: stretch;
+  }
+  /* Left column: text then the 2×2 highlights. Middle: full photo. Right: widget. */
+  .hero-main { grid-column: 1; display: flex; flex-direction: column; gap: 26px; }
+  .hero-main .scrollcue { margin-top: auto; }
+  .hero-text { max-width: 600px; }
+  .hero-photo {
+    grid-column: 2; align-self: start; justify-self: center;
+    width: 100%; max-width: 340px; height: auto;
+    border-radius: 16px; border: 1.5px solid var(--line);
+    box-shadow: 0 18px 42px -20px rgba(201,68,42,.5);
+  }
+  .hero-name { font-family: "Fraunces", serif; font-weight: 600; font-size: clamp(34px, 5vw, 58px); line-height: 1.04; letter-spacing: -0.02em; margin-top: 12px; color: var(--ink); }
+  .hero-subtitle { font-family: "Fraunces", serif; font-weight: 500; font-size: clamp(16px, 1.7vw, 21px); line-height: 1.3; color: var(--ink); margin-top: 14px; max-width: 32ch; }
+  .hero-bio { color: var(--ink-dim); font-size: 14.5px; line-height: 1.62; margin-top: 16px; max-width: 56ch; }
+
+  /* Career highlight tiles — compact, clickable, leading the eye down toward the river */
+  .hl-tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; max-width: 540px; }
+  .hl-tile {
+    display: flex; gap: 11px; align-items: center; text-align: left; cursor: pointer; width: 100%;
+    background: var(--paper-soft); border: 1px solid var(--line); border-radius: 12px; padding: 11px 13px;
+    box-shadow: 0 10px 24px -20px rgba(14,76,68,.7);
+    transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+  }
+  .hl-tile:hover { transform: translateY(-2px); border-color: var(--clay); box-shadow: 0 0 0 3px rgba(201,68,42,.12), 0 16px 30px -18px rgba(201,68,42,.6); }
+  .hl-tile:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+  .hl-tile-icon { width: 40px; height: 40px; flex-shrink: 0; padding: 8px; color: var(--clay); background: var(--paper); border: 1.5px solid var(--clay); border-radius: 50%; transition: background .2s ease, color .2s ease; }
+  .hl-tile-icon svg { width: 100%; height: 100%; display: block; }
+  .hl-tile:hover .hl-tile-icon { background: var(--clay); color: var(--paper); }
+  .hl-tile-text { display: flex; flex-direction: column; min-width: 0; }
+  .hl-tile-kicker { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 8.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--clay); margin-bottom: 3px; }
+  .hl-tile-title { font-family: "Fraunces", serif; font-weight: 600; font-size: 13.5px; line-height: 1.2; color: var(--ink); }
+
+  /* Recruiter widget — right column, full hero height */
+  .fitwidget {
+    grid-column: 3;
+    width: 100%; align-self: start;
+    background: linear-gradient(180deg, var(--paper-soft) 0%, rgba(232,225,199,0.92) 100%);
+    border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 24px; display: flex; flex-direction: column; gap: 18px;
+    box-shadow: 0 18px 40px -28px rgba(14,76,68,0.6);
+  }
+  .fitwidget h2 { font-size: 22px; color: var(--ink); }
+  .fitwidget .sub { color: var(--ink-dim); font-size: 13.5px; margin-top: 4px; }
+  .q .mono { display: block; margin-bottom: 8px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    border: 1px solid var(--line); border-radius: 999px; padding: 7px 13px; font-size: 13.5px;
+    color: var(--ink-dim); background: rgba(217,207,174,.4); transition: all .2s ease;
+  }
+  .chip:hover { border-color: var(--river); color: var(--ink); }
+  .chip:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+  .chip[aria-pressed="true"] { background: var(--river); border-color: var(--river); color: var(--paper); }
+  .chip[aria-pressed="true"]::before { content: "● "; color: var(--river-hi); font-size: 9px; vertical-align: 2px; }
+
+  .fit-result { border-top: 1px dashed var(--line); padding-top: 14px; display: flex; flex-direction: column; gap: 10px; }
+  .fit-result.is-open { animation: fade .3s ease; }
+  .fit-empty { display: flex; align-items: center; gap: 8px; color: var(--ink-dim); font-size: 13px; font-style: italic; }
+  .fit-empty .fit-caret { color: var(--river); font-style: normal; font-size: 14px; line-height: 1; }
+  .fit-result .lead { font-family: "Fraunces", serif; font-size: 17px; line-height: 1.45; color: var(--ink); }
+  .fit-result ul { list-style: none; display: flex; flex-direction: column; gap: 7px; }
+  .fit-result li { font-size: 13.5px; color: var(--ink-dim); padding-left: 16px; position: relative; }
+  .fit-result li::before { content: ""; position: absolute; left: 0; top: 8px; width: 7px; height: 7px; border-radius: 50%; background: var(--clay); }
+  .fit-result .hint { color: var(--ink-dim); font-size: 13.5px; font-style: italic; }
+  .fit-cta {
+    align-self: flex-start; margin-top: 2px;
+    background: var(--clay); color: var(--paper); font-weight: 600; font-size: 13.5px;
+    padding: 9px 16px; border-radius: 999px; text-decoration: none;
+    transition: transform .2s ease, background .2s ease;
+  }
+  .fit-cta:hover { transform: translateY(-1px); background: #A3442A; }
+
+  .scrollcue { display: flex; align-items: center; gap: 8px; color: var(--ink-dim); }
+  .scrollcue .arrow { color: var(--river-hi); animation: drift 2.2s ease-in-out infinite; }
+  @keyframes drift { 0%, 100% { transform: translateX(0); } 50% { transform: translateY(4px); } }
+
+  /* Journey section */
+  #journey { position: relative; z-index: 3; padding-top: 40px; }
+  .journey-head { max-width: var(--maxw); margin: 0 auto; padding: 0 28px; text-align: left; }
+  .journey-head .mono { display: block; margin-bottom: 8px; }
+  .journey-head h2 { font-size: clamp(28px, 3.4vw, 42px); }
+  .journey-head p { color: var(--ink-dim); max-width: 60ch; margin: 10px 0 0; font-size: 15px; }
+  .river-wrap { position: relative; width: 100%; }
+
+  .flowline { fill: none; stroke: var(--river-hi); stroke-opacity: .7; stroke-width: 2; stroke-dasharray: 3 14; stroke-linecap: round; animation: flow 2.6s linear infinite; }
+  @keyframes flow { to { stroke-dashoffset: -34; } }
+
+  /* Timeline entries (live in #mapOverlay, positioned in document coords) */
+  .entry { position: absolute; width: min(360px, 38vw); cursor: pointer; }
+  .entry .e-card { position: relative; background: var(--paper-soft); border: 1px solid var(--line); border-radius: 12px; padding: 16px 46px 16px 18px; transition: border-color .25s ease, transform .25s ease; box-shadow: 0 12px 30px -22px rgba(14,76,68,.7); }
+  .e-logo { position: absolute; top: 12px; right: 14px; width: 24px; height: 24px; opacity: .9; }
+  .entry .e-card:hover { border-color: var(--river); transform: translateY(-2px); }
+  .entry:focus-within .e-card { border-color: var(--river); outline: 2px solid var(--ink); outline-offset: 2px; }
+  .entry h3 { font-family: "Fraunces", serif; font-size: 19px; margin: 7px 0 2px; color: var(--ink); }
+  .entry .org { color: var(--river); font-size: 13.5px; margin-bottom: 7px; }
+  .entry p { color: var(--ink-dim); font-size: 13.5px; }
+  .node { position: absolute; width: 14px; height: 14px; border-radius: 50%; background: var(--river); border: 3px solid var(--paper); box-shadow: 0 0 0 2px var(--river); transform: translate(-50%, -50%); transition: all .2s ease; cursor: pointer; }
+  .node:hover { transform: translate(-50%, -50%) scale(1.3); }
+  .node.source { background: var(--gold); box-shadow: 0 0 0 2px var(--gold); }
+  .km { position: absolute; transform: translate(-50%, -50%); white-space: nowrap; }
+
+  footer { position: relative; z-index: 3; padding: 60px 28px 80px; text-align: center; }
+  .colophon { color: var(--ink-dim); font-size: 12px; }
+
+  .overlay { position: fixed; inset: 0; z-index: 50; display: none; align-items: center; justify-content: center; background: rgba(22,51,42,0.32); backdrop-filter: blur(4px); padding: 22px; }
+  .overlay.open { display: flex; }
+  .modal {
+    width: min(640px, 100%); max-height: 84vh; overflow: auto;
+    background: var(--paper-soft); border: 1px solid var(--river); border-radius: 16px;
+    padding: 30px 32px; position: relative; animation: rise .3s ease;
+  }
+  @keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+  .modal .mono { display: block; margin-bottom: 6px; color: var(--ink-dim); }
+  .modal h3 { font-family: "Fraunces", serif; font-size: 26px; margin-bottom: 4px; color: var(--ink); }
+  .modal .org { color: var(--river); font-size: 14px; margin-bottom: 14px; }
+  .modal p { color: var(--ink-dim); font-size: 14.5px; margin-bottom: 12px; }
+  .modal ul { list-style: none; padding-left: 0; margin: 12px 0; }
+  .modal li { color: var(--ink-dim); font-size: 14.5px; margin-bottom: 8px; padding-left: 18px; position: relative; }
+  .modal li::before { content: "–"; position: absolute; left: 0; }
+  .modal .stats { display: flex; gap: 22px; flex-wrap: wrap; margin: 16px 0 4px; padding-top: 14px; border-top: 1px dashed var(--line); }
+  .modal .stat b { display: block; font-family: "Fraunces", serif; font-size: 22px; color: var(--gold); font-weight: 600; }
+  .modal .stat span { font-size: 12px; color: var(--ink-dim); }
+  .close { position: absolute; top: 14px; right: 14px; width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--line); color: var(--ink-dim); font-size: 16px; line-height: 1; transition: all .2s ease; cursor: pointer; }
+  .close:hover { border-color: var(--clay); color: var(--clay); }
+  .modal-logo { display: block; width: 52px; height: 52px; object-fit: contain; margin-bottom: 14px; border-radius: 10px; }
+  #modalCta { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; }
+  #modalCta a { display: inline-flex; align-items: center; gap: 8px; background: var(--clay); color: var(--paper); font-weight: 600; font-size: 14px; padding: 11px 18px; border-radius: 999px; text-decoration: none; transition: transform .2s ease, background .2s ease; }
+  #modalCta a:hover { transform: translateY(-1px); background: #A3442A; }
+
+  /* Top-right "more fun" trigger */
+  .funlink { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 11px; letter-spacing: .06em; color: var(--river); border: none; background: none; padding: 2px 0; cursor: pointer; transition: color .2s ease, opacity .2s ease; }
+  .funlink:hover, .funlink:focus-visible { color: var(--river-hi); opacity: .85; text-decoration: underline; text-underline-offset: 3px; }
+
+  /* Full-screen construction overlay */
+  .fun-overlay { position: fixed; inset: 0; z-index: 60; display: none; align-items: center; justify-content: center; background: var(--paper); padding: 24px; }
+  .fun-overlay.open { display: flex; animation: fade .25s ease; }
+  @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+  .fun-inner { text-align: center; max-width: 460px; }
+  .fun-inner svg { width: 112px; height: 112px; margin: 0 auto 24px; display: block; }
+  .fun-inner p { font-family: "Fraunces", serif; font-size: clamp(20px, 3vw, 28px); line-height: 1.3; color: var(--ink); }
+  .fun-close { position: absolute; top: 20px; right: 22px; font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 13px; color: var(--ink-dim); border: 1px solid var(--line); background: var(--paper-soft); padding: 8px 14px; border-radius: 999px; cursor: pointer; transition: border-color .2s ease, color .2s ease; }
+  .fun-close:hover, .fun-close:focus-visible { border-color: var(--clay); color: var(--clay); }
+
+  /* Floating contact buttons — sit on top of the page, not in a docked bar */
+  .ctabar { position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%); z-index: 40; display: flex; justify-content: center; gap: 12px; padding: 0; background: none; border: none; box-shadow: none; max-width: calc(100% - 28px); }
+  .ctabar a { display: inline-flex; align-items: center; justify-content: center; gap: 9px; min-height: 44px; padding: 9px 18px; border-radius: 999px; text-decoration: none; font-size: 14px; font-weight: 500; color: var(--ink); border: 1.5px solid var(--river); background: var(--paper-soft); box-shadow: 0 0 0 3px rgba(31,138,120,.12), 0 12px 30px -10px rgba(31,138,120,.5); transition: background .2s ease, color .2s ease, border-color .2s ease, transform .2s ease; }
+  .ctabar a:hover, .ctabar a:focus-visible { background: var(--river); border-color: var(--river); color: var(--paper); transform: translateY(-2px); }
+  .ctabar a svg { width: 18px; height: 18px; display: block; flex-shrink: 0; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+    html { scroll-behavior: auto; }
+  }
+
+  @media (max-width: 940px) {
+    .hero { grid-template-columns: 1fr; min-height: auto; }
+    .hero-main, .hero-photo, .fitwidget { grid-column: 1; }
+    .fitwidget { height: auto; }
+    .entry { width: min(420px, 72vw); }
+  }
+  @media (max-width: 600px) {
+    .entry { width: 76vw; }
+    .entry .e-card { padding: 13px 40px 13px 14px; }
+    .ctabar-label { display: none; }
+    .ctabar a { padding: 10px; min-width: 44px; }
+  }
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Archivo:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<canvas id="terrain" aria-hidden="true"></canvas>
+<svg id="mapSvg" aria-hidden="true"></svg>
+<div id="mapOverlay"></div>
+
+<div class="page">
+
+  <header>
+    <button class="funlink" id="funTrigger" aria-haspopup="dialog">Stuff that's a little more fun...</button>
+  </header>
+
+  <section class="hero">
+    <div class="hero-main">
+      <div class="hero-text">
+        <span class="mono"><span class="tick">▲</span> Source · Sydney, Australia · S33° E151°</span>
+        <h1 class="hero-name">Tom Stephens</h1>
+        <p class="hero-subtitle">AI-Powered, Creative Product Manager with an entrepreneurial approach grounded in deep end-to-end experience</p>
+        <p class="hero-bio">I'm a product manager who pairs end-to-end delivery experience with an entrepreneurial, AI-first way of working. I've taken products from blank page to launch — co-founding a carbon-labelling app — and driven measurable commercial outcomes for global brands. I'm looking for a product role in a start-up or scale-up where I can move fast, build things that matter, and make a social difference wherever the opportunity allows.</p>
+      </div>
+
+      <div class="hl-tiles" id="highlights" aria-label="Career highlights"></div>
+
+      <div class="scrollcue">
+        <span class="mono">Follow the river downstream</span>
+        <span class="arrow">▼</span>
+      </div>
+    </div>
+
+    <img class="hero-photo" src="assets/tom.jpg" alt="Tom Stephens">
+
+    <!-- Recruiter fit widget -->
+    <div class="fitwidget" id="fit">
+      <div>
+        <h2 class="display">Hiring? Check the fit.</h2>
+        <p class="sub">Two quick taps and I'll show you how my experience maps to your role.</p>
+      </div>
+
+      <div class="q">
+        <span class="mono">01 · What are you hiring for?</span>
+        <div class="chips" id="roleChips" role="group" aria-label="Role type">
+          <button class="chip" data-role="zero" aria-pressed="false">0 → 1 product</button>
+          <button class="chip" data-role="scale" aria-pressed="false">Scale-up growth</button>
+          <button class="chip" data-role="enterprise" aria-pressed="false">Enterprise delivery</button>
+          <button class="chip" data-role="platform" aria-pressed="false">Platform / replatform</button>
+        </div>
+      </div>
+
+      <div class="q">
+        <span class="mono">02 · What matters most? (pick up to two)</span>
+        <div class="chips" id="prioChips" role="group" aria-label="Priorities">
+          <button class="chip" data-prio="discovery" aria-pressed="false">Customer discovery</button>
+          <button class="chip" data-prio="pace" aria-pressed="false">Delivery pace</button>
+          <button class="chip" data-prio="data" aria-pressed="false">Data fluency</button>
+          <button class="chip" data-prio="stakeholders" aria-pressed="false">Stakeholder craft</button>
+        </div>
+      </div>
+
+      <div class="fit-result" id="fitResult" aria-live="polite">
+        <p class="fit-empty"><span class="fit-caret" aria-hidden="true">▾</span> Make a selection to reveal the fit</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- River timeline -->
+  <section id="journey">
+    <div class="journey-head">
+      <span class="mono"><span class="tick">●</span> The journey · navigate downstream</span>
+      <h2 class="display">My Experience</h2>
+      <p>Scroll through my journey, starting in the present, winding back through my consulting experience, founding a not-for-profit, to my uni days at Oxford</p>
+    </div>
+    <div class="river-wrap" id="riverWrap"></div>
+  </section>
+
+  <!-- Foot of the page -->
+  <footer id="delta"></footer>
+
+</div>
+
+<!-- Modal -->
+<div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modal">
+    <button class="close" id="modalClose" aria-label="Close">✕</button>
+    <img id="modalLogo" class="modal-logo" alt="" hidden>
+    <span class="mono" id="modalKicker"></span>
+    <h3 id="modalTitle"></h3>
+    <div class="org" id="modalOrg"></div>
+    <div id="modalBody"></div>
+    <div class="stats" id="modalStats"></div>
+    <div id="modalCta"></div>
+  </div>
+</div>
+
+<!-- "More fun" construction overlay -->
+<div class="fun-overlay" id="funOverlay" role="dialog" aria-modal="true" aria-labelledby="funTitle" aria-hidden="true">
+  <button class="fun-close" id="funClose" aria-label="Close">✕ close</button>
+  <div class="fun-inner">
+    <svg viewBox="0 0 64 64" aria-hidden="true">
+      <rect x="9" y="52" width="46" height="7" rx="3" fill="#C9442A"/>
+      <path d="M32 9 L47 52 L17 52 Z" fill="#C9442A" stroke="#16332A" stroke-width="2.5" stroke-linejoin="round"/>
+      <path d="M27 29 L37 29 L39.4 37 L24.6 37 Z" fill="#F2ECD8"/>
+      <path d="M22.5 43 L41.5 43 L43.6 50 L20.4 50 Z" fill="#F2ECD8"/>
+    </svg>
+    <p id="funTitle">Under construction — check back in a week</p>
+  </div>
+</div>
+
+<!-- Sticky bottom contact bar -->
+<nav class="ctabar" aria-label="Primary contact actions">
+  <a href="mailto:tomstephens12@gmail.com" aria-label="Email me" title="Email me">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3.5 7 L12 13 L20.5 7"/></svg>
+    <span class="ctabar-label">Email me</span>
+  </a>
+  <a href="https://www.linkedin.com/in/thomas-stephens1" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" title="LinkedIn">
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4.98 3.5C4.98 4.6 4.1 5.5 3 5.5S1 4.6 1 3.5 1.9 1.5 3 1.5s1.98.9 1.98 2zM1.2 21.5h3.6V8.2H1.2v13.3zM8 8.2h3.45v1.82h.05c.48-.9 1.65-1.85 3.4-1.85 3.63 0 4.3 2.39 4.3 5.5v7.83h-3.6v-6.94c0-1.65-.03-3.78-2.3-3.78-2.3 0-2.65 1.8-2.65 3.66v7.06H8V8.2z"/></svg>
+    <span class="ctabar-label">LinkedIn</span>
+  </a>
+  <a href="mailto:tomstephens12@gmail.com?subject=CV%20request&body=Hi%20there%2C%0A%0AI%20found%20your%20website%20and%20would%20love%20to%20know%20more%20about%20your%20experience.%0A%0APlease%20send%20me%20your%20CV.%0A%0AThanks%2C%0A%0A" aria-label="Request my CV" title="Request my CV">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 2 L11 13"/><path d="M22 2 L15 22 L11 13 L2 9 Z"/></svg>
+    <span class="ctabar-label">Request my CV</span>
+  </a>
+</nav>
+
+<script src="content.js"></script>
+<script>
+/* Guardrail: verify content.js loaded correctly */
+if (typeof TIMELINE === 'undefined' || !Array.isArray(TIMELINE) || TIMELINE.length === 0) {
+  document.body.innerHTML = '<div style="padding:40px;font-family:sans-serif;max-width:600px;margin:40px auto;border:2px solid #C9442A;border-radius:8px;color:#16332A;background:#F2ECD8"><h2>Content not loaded</h2><p>content.js is missing, empty, or has a syntax error. Check the browser console (Cmd+Opt+J) for details.</p></div>';
+  throw new Error('TIMELINE failed to load from content.js');
+}
+if (typeof HIGHLIGHTS === 'undefined' || !Array.isArray(HIGHLIGHTS) || HIGHLIGHTS.length === 0) {
+  document.body.innerHTML = '<div style="padding:40px;font-family:sans-serif;max-width:600px;margin:40px auto;border:2px solid #C9442A;border-radius:8px;color:#16332A;background:#F2ECD8"><h2>Content not loaded</h2><p>content.js is missing, empty, or has a syntax error. Check the browser console (Cmd+Opt+J) for details.</p></div>';
+  throw new Error('HIGHLIGHTS failed to load from content.js');
+}
+
+function renderBody(text) {
+  if (!text) return '';
+  const paragraphs = text.trim().split(/\n\s*\n/);
+  return paragraphs.map(p => {
+    const lines = p.split('\n').map(l => l.trim()).filter(Boolean);
+    if (lines.length && lines.every(l => l.startsWith('- '))) {
+      return '<ul>' + lines.map(l => `<li>${l.slice(2)}</li>`).join('') + '</ul>';
+    }
+    return `<p>${lines.join(' ')}</p>`;
+  }).join('');
+}
+
+/* Seeded noise for terrain */
+function mulberry32(a) {
+  return function() {
+    a |= 0; a = (a + 0x6d2b79f5) | 0; var t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = t + Math.imul(t ^ (t >>> 7), 61 | t) ^ t;
+    return (((t ^ (t >>> 14)) >>> 0) / 4294967296)
+  }
+}
+function vnoise(x, y, perm) {
+  const xi = Math.floor(x) & 255, yi = Math.floor(y) & 255;
+  const xf = x - Math.floor(x), yf = y - Math.floor(y);
+  const u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf);
+  const h = (a, b) => perm[(perm[a & 255] + b) & 255] / 255;
+  const a = h(xi, yi), b = h(xi + 1, yi), c = h(xi, yi + 1), d = h(xi + 1, yi + 1);
+  return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+}
+function fbm(x, y, perm) {
+  let s = 0, a = 0.5, f = 1;
+  for (let o = 0; o < 3; o++) { s += a * vnoise(x * f, y * f, perm); a *= 0.5; f *= 2.1; }
+  return s / 0.875;
+}
+
+const seed = Math.floor(Math.random() * 1e9);
+const rng = mulberry32(seed);
+const perm = new Uint8Array(512);
+(() => {
+  const p = [...Array(256).keys()];
+  for (let i = 255; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); [p[i], p[j]] = [p[j], p[i]]; }
+  for (let i = 0; i < 512; i++) perm[i] = p[i & 255];
+})();
+
+const clamp = (v, lo, hi) => Math.min(Math.max(v, lo), hi);
+
+/* Shared geometry, recomputed each build */
+let MAP = { W: 0, totalH: 0, riverTopDoc: 0, riverEndDoc: 0 };
+
+/* Winding centreline of the single river, in document coordinates.
+   t measured from the river head so the source and delta join seamlessly. */
+function riverCX(yDoc) {
+  const W = MAP.W;
+  const t = yDoc - MAP.riverTopDoc;
+  const amp1 = W * 0.16, amp2 = W * 0.085;
+  const x = W * 0.5 + Math.sin(t * 0.0026 + 1.1) * amp1 + Math.sin(t * 0.0009 + 4.2) * amp2;
+  return clamp(x, W * 0.16, W * 0.84);
+}
+/* River half-width grows from narrow (at the source/top) to wide (toward the delta/bottom) */
+function riverHalfW(yDoc) {
+  const span = Math.max(MAP.riverEndDoc - MAP.riverTopDoc, 1);
+  const f = clamp((yDoc - MAP.riverTopDoc) / span, 0, 1);
+  return 9 + 9 * f;
+}
+
+/* CleanPlate-specific modal extras (driven by the explicit `cleanplate` flag in content.js) */
+const CLEANPLATE_URL = 'https://www.linkedin.com/posts/thomas-stephens1_after-what-feels-like-endless-design-changes-activity-7151611330112716800-yKcL';
+const cleanplateCta = `<a href="${CLEANPLATE_URL}" target="_blank" rel="noopener noreferrer">Check out CleanPlate →</a>`;
+function setModalLogo(isCleanplate) {
+  const logo = document.getElementById('modalLogo');
+  if (isCleanplate) {
+    logo.src = 'assets/logos/cleanplate.svg';
+    logo.alt = 'CleanPlate logo';
+    logo.hidden = false;
+  } else {
+    logo.hidden = true;
+    logo.removeAttribute('src');   // no slot / gap for non-CleanPlate entries
+    logo.alt = '';
+  }
+}
+
+function openModalFromTimeline(entry) {
+  setModalLogo(!!entry.cleanplate);
+  document.getElementById('modalKicker').textContent = entry.years;
+  document.getElementById('modalTitle').textContent = entry.role;
+  document.getElementById('modalOrg').textContent = entry.org;
+  const intro = entry.body.split('\n\n')[0].split('\n')[0].trim();     // same text as the card preview
+  document.getElementById('modalBody').innerHTML = intro ? `<p>${intro}</p>` : '';
+  document.getElementById('modalStats').innerHTML = (entry.stats || [])
+    .map(s => `<div class="stat"><b>${s.value}</b><span>${s.label}</span></div>`).join('');
+  const contactCta = `<a href="mailto:tomstephens12@gmail.com">Want to find out more? Get in touch →</a>`;
+  document.getElementById('modalCta').innerHTML = (entry.cleanplate ? cleanplateCta : '') + contactCta;
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('modalClose').focus();
+}
+function openModalFromHighlight(h) {
+  setModalLogo(!!h.cleanplate);
+  document.getElementById('modalKicker').textContent = h.kicker;
+  document.getElementById('modalTitle').textContent = h.title;
+  document.getElementById('modalOrg').textContent = h.org;
+  document.getElementById('modalBody').innerHTML = renderBody(h.body);
+  document.getElementById('modalStats').innerHTML = (h.stats || [])
+    .map(s => `<div class="stat"><b>${s.value}</b><span>${s.label}</span></div>`).join('');
+  document.getElementById('modalCta').innerHTML = h.cleanplate ? cleanplateCta : '';   // CleanPlate gets a link; others none
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('modalClose').focus();
+}
+function closeModal() { document.getElementById('overlay').classList.remove('open'); }
+
+/* ---- The single build: lays out content, then draws the continuous map ---- */
+function buildMap() {
+  const W = window.innerWidth;
+  const isNarrow = W < 700;
+  const overlay = document.getElementById('mapOverlay');
+  const wrap = document.getElementById('riverWrap');
+  const svg = document.getElementById('mapSvg');
+  const cv = document.getElementById('terrain');
+
+  // 1. Provisional timeline height so we can measure the river-wrap's position
+  const entryGap = isNarrow ? 360 : 440;
+  wrap.style.height = (TIMELINE.length * entryGap + 280) + 'px';
+
+  // 2. Geography (document coordinates). The river runs top -> bottom: it fades in from
+  //    the hero up top, winds through the timeline, then fans into a dendritic delta below.
+  const cardsTop = wrap.getBoundingClientRect().top + window.scrollY;
+  const riverTopDoc = cardsTop + 96;                 // where the main river begins
+  const nodeBaseY = riverTopDoc + 48;                // first (most recent) timeline node
+  const lastNodeY = nodeBaseY + (TIMELINE.length - 1) * entryGap;
+  const riverEndDoc = lastNodeY + 96;                // foot of the river = delta trunk
+
+  // The river continues up into the hero (above the fold) and fades out, rather than
+  // starting from a drawn source. riverDrawTop is partway up the hero; the stroke fades
+  // from invisible there to fully visible by the time it reaches the timeline.
+  const heroRect = document.querySelector('.hero').getBoundingClientRect();
+  const heroTopDoc = heroRect.top + window.scrollY;
+  const heroBottomDoc = heroRect.bottom + window.scrollY;
+  const riverDrawTop = heroTopDoc + (heroBottomDoc - heroTopDoc) * 0.78;
+  const fadeLen = 260;
+
+  // Tighten the river-wrap so the delta footer sits right beneath the river's foot
+  wrap.style.height = (riverEndDoc - cardsTop + 24) + 'px';
+
+  const footerBottom = document.querySelector('footer').getBoundingClientRect().bottom + window.scrollY;
+  const totalH = Math.max(document.documentElement.scrollHeight, footerBottom, riverEndDoc);
+  const riverDrawBottom = footerBottom - 24;          // the river fades out near the foot of the page
+
+  MAP = { W, totalH, riverTopDoc, riverEndDoc, riverDrawBottom };
+
+  // 3. Size background layers to the whole document
+  svg.setAttribute('viewBox', `0 0 ${W} ${totalH}`);
+  svg.setAttribute('preserveAspectRatio', 'none');
+  svg.style.height = totalH + 'px';
+  overlay.style.height = totalH + 'px';
+
+  // 4. Build SVG — one continuous winding river that fades in from the hero at the top and
+  //    fades out near the foot of the page at the bottom (via a single vertical mask).
+  let paths = '';
+
+  const span = Math.max(riverDrawBottom - riverDrawTop, 1);
+  const offTop = (fadeLen / span).toFixed(4);
+  const offBot = (1 - fadeLen / span).toFixed(4);
+  paths += `<defs>`
+    + `<linearGradient id="riverFade" gradientUnits="userSpaceOnUse" x1="0" y1="${riverDrawTop.toFixed(1)}" x2="0" y2="${riverDrawBottom.toFixed(1)}">`
+    + `<stop offset="0" stop-color="#fff" stop-opacity="0"/>`
+    + `<stop offset="${offTop}" stop-color="#fff" stop-opacity="1"/>`
+    + `<stop offset="${offBot}" stop-color="#fff" stop-opacity="1"/>`
+    + `<stop offset="1" stop-color="#fff" stop-opacity="0"/>`
+    + `</linearGradient>`
+    + `<mask id="riverFadeMask"><rect x="0" y="${riverDrawTop.toFixed(1)}" width="${W}" height="${span.toFixed(1)}" fill="url(#riverFade)"/></mask>`
+    + `</defs>`;
+
+  const pts = [];
+  for (let y = riverDrawTop; y <= riverDrawBottom; y += 16) pts.push([riverCX(y).toFixed(1), y.toFixed(1)]);
+  const rd = 'M ' + pts.map(p => p[0] + ' ' + p[1]).join(' L ');
+  paths += `<g mask="url(#riverFadeMask)">`;
+  paths += `<path d="${rd}" fill="none" stroke="#0E4C44" stroke-width="34" stroke-linecap="round" opacity="0.5"/>`;
+  paths += `<path d="${rd}" fill="none" stroke="#1F8A78" stroke-width="16" stroke-linecap="round"/>`;
+  paths += `<path d="${rd}" fill="none" stroke="#2FB89F" stroke-width="3" opacity="0.35"/>`;
+  paths += `<path class="flowline" d="${rd}"/>`;
+  paths += `</g>`;
+
+  svg.innerHTML = paths;
+
+  // 5. Overlay: timeline nodes + cards (newest at top, oldest at bottom)
+  overlay.innerHTML = '';
+
+  TIMELINE.forEach((e, i) => {
+    const y = nodeBaseY + i * entryGap;
+    const x = riverCX(y);
+    const side = x > W / 2 ? 'left' : 'right';
+
+    const node = document.createElement('div');
+    node.className = 'node' + (e.source ? ' source' : '');
+    node.style.left = x + 'px';
+    node.style.top = y + 'px';
+    node.addEventListener('click', () => openModalFromTimeline(e));
+    overlay.appendChild(node);
+
+    const km = document.createElement('span');
+    km.className = 'mono km';
+    km.textContent = e.km;
+    km.style.left = x + 'px';
+    km.style.top = (y - 28) + 'px';
+    overlay.appendChild(km);
+
+    const card = document.createElement('div');
+    card.className = 'entry';
+    const firstParagraph = e.body.split('\n\n')[0].split('\n')[0].trim();
+    const logoHtml = e.logo ? `<img class="e-logo" src="assets/logos/${e.logo}.svg" alt="${e.org} logo">` : '';
+    card.innerHTML = `<div class="e-card">
+      ${logoHtml}
+      <span class="mono">${e.years}</span>
+      <h3>${e.role}</h3>
+      <div class="org">${e.org}</div>
+      <p>${firstParagraph}</p>
+    </div>`;
+    card.setAttribute('role', 'button');
+    card.setAttribute('tabindex', '0');
+    card.setAttribute('aria-label', `${e.role} at ${e.org}`);
+    card.addEventListener('click', () => openModalFromTimeline(e));
+    card.addEventListener('keydown', evt => {
+      if (evt.key === 'Enter' || evt.key === ' ') { evt.preventDefault(); openModalFromTimeline(e); }
+    });
+    card.style.top = (y - 40) + 'px';
+    const gap = isNarrow ? 30 : 56;
+    const cardW = isNarrow ? W * 0.76 : Math.min(360, W * 0.38);
+    card.style.left = (side === 'left' ? Math.max(12, x - gap - cardW) : Math.min(W - 12 - cardW, x + gap)) + 'px';
+    overlay.appendChild(card);
+  });
+
+  // 6. Terrain dots across the whole document, carved away from the water
+  buildTerrain(cv, W, totalH);
+}
+
+function buildTerrain(cv, W, H) {
+  cv.width = W; cv.height = H;
+  cv.style.width = W + 'px'; cv.style.height = H + 'px';
+  const ctx = cv.getContext('2d');
+  ctx.clearRect(0, 0, W, H);
+
+  const step = 7;
+  for (let y = 0; y < H; y += step) {
+    for (let x = 0; x < W; x += step) {
+      const jx = x + (rng() - 0.5) * step, jy = y + (rng() - 0.5) * step;
+      const e = fbm(jx * 0.0042, jy * 0.0042, perm);
+      const band = e * 11;
+      const distToLine = Math.abs(band - Math.round(band));
+      let p = distToLine < 0.07 ? 0.6 : 0.045;
+      p *= 0.35 + e * 0.85;
+
+      // Carve dots away from the single river corridor
+      if (jy > MAP.riverTopDoc && jy < MAP.riverDrawBottom) {
+        const dist = Math.abs(jx - riverCX(jy));
+        const half = riverHalfW(jy) + 24;
+        if (dist < half) continue;
+        p *= Math.min(1, 0.2 + (dist - half) / 160);
+      }
+
+      if (rng() < p) {
+        const size = distToLine < 0.07 ? 1.8 : 1.2;
+        const alpha = 0.13 + e * 0.2;
+        ctx.fillStyle = `rgba(74,102,80,${alpha.toFixed(3)})`;
+        ctx.fillRect(jx, jy, size, size);
+      }
+    }
+  }
+}
+
+/* ===== RECRUITER WIDGET COPY — edit freely =====
+   Hand-authored, rule-based mapping (no AI, no network). Every claim below is drawn
+   from the real TIMELINE / HIGHLIGHTS data in content.js. If you change a metric in
+   content.js, update the matching line here so they stay consistent. */
+const ROLE_COPY = {
+  zero: {
+    lead: "Zero-to-one is where I started. I've built a product from a blank page, not just managed an existing one.",
+    points: [
+      "Co-founded CleanPlate, a carbon-labelling food app, and took it 0 → 1: blank-page discovery, weekly Figma iteration, user testing, grant funding and shipping to production.",
+      "Generated 100k+ marketing impressions and secured grant funding from a standing start.",
+      "Comfortable owning everything end-to-end when there's no playbook, business and product alike."
+    ]
+  },
+  scale: {
+    lead: "Scale-ups need pace with evidence. My delivery work has moved real commercial metrics.",
+    points: [
+      "Drove a 15%+ conversion uplift in year one on a luxury automotive commerce build by bringing CRO and analytics into discovery and championing rapid AB testing.",
+      "Lifted delivery speed by 25% on the same programme by pulling design and business closer to engineering.",
+      "Raised throughput of validated initiatives by 50% (8 → 12 per quarter) at a utilities client with a time-boxed discovery and solutioning function."
+    ]
+  },
+  enterprise: {
+    lead: "I've delivered product inside large, complex enterprise programmes — and the product function has helped win the work.",
+    points: [
+      "Owned delivery of 5 business-critical features on a $64m global clinical-trials programme (Global Pharmaceutical).",
+      "Led product across three scrum teams through three Program Increments on a $90m automotive engagement, where product was a key differentiator in the win.",
+      "Designed a value-measurement framework and 'Value Realisation Office' for a public-sector programme, securing a $4m follow-on across 10 delivery teams.",
+      "Consolidated ways of working into a scaled-agile playbook used across 20+ initiatives at a global pharmaceutical client"
+    ]
+  },
+  platform: {
+    lead: "Not a dedicated platform specialist — but I've led product through significant modernisation and commerce-platform work.",
+    points: [
+      "Led a team of 5 BAs in modernising the digital product suite for an international bank.",
+      "Helped evolve a luxury automotive website from a digital showcase into a high-converting commerce platform.",
+      "Owned delivery modernising a global clinical-trials tool on a $64m programme.",
+      "Bridge business strategy and engineering decisions comfortably, and stay credible with technical teams."
+    ]
+  }
+};
+/* Each priority pulls a specific, real proof point from the CV. */
+const PRIO_COPY = {
+  discovery: "Customer discovery: I led customer-centric discovery on the Global Bank engagement, and at CleanPlate talked to users from day one to shape the journey.",
+  pace: "Delivery pace: I lifted delivery speed by 25% on the automotive build and raised initiative throughput by 50% at a utilities client.",
+  data: "Data fluency: I built value/KPI trees linking strategy to operational metrics for a public-sector programme — the proof of concept that secured a $4m follow-on — and ran rapid AB testing on the automotive build.",
+  stakeholders: "Stakeholder craft: I coach senior client stakeholders to think product, and have authored proposals and pitches for CMOs (contributing to $28m+ of origination work)."
+};
+/* ===== end widget copy ===== */
+
+let pickedRole = null, pickedPrios = [];
+function renderFit() {
+  const out = document.getElementById('fitResult');
+  const cta = `<a class="fit-cta" href="mailto:tomstephens12@gmail.com">Sounds right? Email me →</a>`;
+
+  if (!pickedRole && pickedPrios.length === 0) {
+    out.classList.remove('is-open');
+    out.innerHTML = `<p class="fit-empty"><span class="fit-caret" aria-hidden="true">▾</span> Make a selection to reveal the fit</p>`;
+    return;
+  }
+
+  const parts = [];
+  if (pickedRole) {
+    const r = ROLE_COPY[pickedRole];
+    // Leave room for priority proof points when any are selected, but always keep it substantial.
+    const rolePoints = r.points.slice(0, pickedPrios.length ? 3 : r.points.length);
+    parts.push(`<p class="lead">${r.lead}</p>`);
+    parts.push(`<ul>${[...rolePoints, ...pickedPrios.map(p => PRIO_COPY[p])].map(li => `<li>${li}</li>`).join('')}</ul>`);
+  } else {
+    // Priorities chosen before a role — still show their real proof points, then nudge for a role.
+    parts.push(`<p class="lead">What matters to you, mapped to real work:</p>`);
+    parts.push(`<ul>${pickedPrios.map(p => `<li>${PRIO_COPY[p]}</li>`).join('')}</ul>`);
+    parts.push(`<p class="hint">Pick a role type above to tailor this to the kind of hire you're making.</p>`);
+  }
+  parts.push(cta);
+  out.classList.add('is-open');
+  out.innerHTML = parts.join('');
+}
+document.getElementById('roleChips').addEventListener('click', e => {
+  const c = e.target.closest('.chip'); if (!c) return;
+  const role = c.dataset.role;
+  if (pickedRole === role) {
+    pickedRole = null; c.setAttribute('aria-pressed', 'false');          // clicking the active role clears it
+  } else {
+    document.querySelectorAll('#roleChips .chip').forEach(x => x.setAttribute('aria-pressed', 'false'));
+    c.setAttribute('aria-pressed', 'true'); pickedRole = role;
+  }
+  renderFit();
+});
+document.getElementById('prioChips').addEventListener('click', e => {
+  const c = e.target.closest('.chip'); if (!c) return;
+  const k = c.dataset.prio;
+  if (pickedPrios.includes(k)) { pickedPrios = pickedPrios.filter(x => x !== k); c.setAttribute('aria-pressed', 'false'); }
+  else if (pickedPrios.length < 2) { pickedPrios.push(k); c.setAttribute('aria-pressed', 'true'); }
+  renderFit();
+});
+
+/* Career highlight tiles in the hero (data-driven, built once). Buttons give
+   native focus + Enter/Space; Escape close is handled globally below. */
+function renderHighlightTiles() {
+  const wrap = document.getElementById('highlights');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+  HIGHLIGHTS.forEach(h => {
+    const tile = document.createElement('button');
+    tile.className = 'hl-tile';
+    tile.setAttribute('aria-haspopup', 'dialog');
+    tile.setAttribute('aria-label', h.title);
+    tile.innerHTML = `
+      <span class="hl-tile-icon">${h.icon}</span>
+      <span class="hl-tile-text">
+        <span class="hl-tile-kicker">${h.kicker}</span>
+        <span class="hl-tile-title">${h.title}</span>
+      </span>`;
+    tile.addEventListener('click', () => openModalFromHighlight(h));
+    wrap.appendChild(tile);
+  });
+}
+renderHighlightTiles();
+
+document.getElementById('modalClose').addEventListener('click', closeModal);
+document.getElementById('overlay').addEventListener('click', e => { if (e.target === document.getElementById('overlay')) closeModal(); });
+
+/* "More fun" construction overlay */
+const funTrigger = document.getElementById('funTrigger');
+const funOverlay = document.getElementById('funOverlay');
+const funClose = document.getElementById('funClose');
+function openFun() { funOverlay.classList.add('open'); funOverlay.setAttribute('aria-hidden', 'false'); funClose.focus(); }
+function closeFun() { funOverlay.classList.remove('open'); funOverlay.setAttribute('aria-hidden', 'true'); funTrigger.focus(); }
+funTrigger.addEventListener('click', openFun);
+funClose.addEventListener('click', closeFun);
+funOverlay.addEventListener('click', e => { if (e.target === funOverlay) closeFun(); });
+
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  if (funOverlay.classList.contains('open')) closeFun();
+  else closeModal();
+});
+
+window.addEventListener('load', buildMap);
+let rT;
+window.addEventListener('resize', () => { clearTimeout(rT); rT = setTimeout(buildMap, 200); });
+buildMap();
+</script>
+</body>
+</html>
