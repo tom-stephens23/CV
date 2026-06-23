@@ -1,0 +1,31 @@
+:root {
+  /* Paper & ink — cartographer's map aesthetic */
+  --paper: #F2ECD8;          /* warm map background */
+  --paper-soft: #E8E1C7;     /* panels, modal, chip backgrounds */
+  --paper-deep: #D9CFAE;     /* borders, hairlines, dividers */
+  --ink: #16332A;            /* primary text — deep forest */
+  --ink-dim: #5A7264;        /* secondary text */
+
+  /* Terrain */
+  --line: #C9BE9C;
+  --dot: #4A6650;            /* contour dots — deeper green, visible on paper */
+
+  /* River — slightly deeper so it reads against light */
+  --river-deep: #0E4C44;
+  --river: #1F8A78;
+  --river-hi: #2FB89F;       /* flow accents */
+
+  /* Accents — warm, deepened for legibility on paper */
+  --clay: #C9442A;           /* disruptive accent; deepened */
+  --gold: #A3781D;           /* sparing secondary; deepened */
+
+  /* Legacy names for backwards compatibility */
+  --basin: #F2ECD8;
+  --panel: #E8E1C7;
+  --panel-2: #D9CFAE;
+  --sand: #16332A;
+  --sand-dim: #5A7264;
+
+  --radius: 14px;
+  --maxw: 1240px;
+}

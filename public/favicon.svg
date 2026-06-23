@@ -1,0 +1,13 @@
+<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      @media (prefers-color-scheme: dark) {
+        .drop { fill: #8FE9D3; }
+      }
+      @media (prefers-color-scheme: light) {
+        .drop { fill: #2FA38F; }
+      }
+    </style>
+  </defs>
+  <path class="drop" d="M16 2 C16 2, 10 10, 10 15 C10 20.5, 12.9 24, 16 24 C19.1 24, 22 20.5, 22 15 C22 10, 16 2, 16 2 Z"/>
+</svg>
