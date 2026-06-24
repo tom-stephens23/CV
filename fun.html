@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tom Stephens — Projects</title>
+<style>
+  :root {
+    --paper: #F2ECD8;
+    --paper-soft: #E8E1C7;
+    --paper-deep: #D9CFAE;
+    --ink: #16332A;
+    --ink-dim: #5A7264;
+    --line: #C9BE9C;
+    --dot: #4A6650;
+    --river-deep: #0E4C44;
+    --river: #1F8A78;
+    --river-hi: #2FB89F;
+    --clay: #C9442A;
+    --gold: #A3781D;
+    --radius: 14px;
+    --maxw: 1240px;
+    --bar-h: 96px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Archivo", system-ui, -apple-system, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    overflow-x: hidden;
+    position: relative;
+    padding-bottom: var(--bar-h);
+  }
+  ::selection { background: var(--clay); color: var(--paper); }
+  a { color: inherit; }
+  button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; }
+
+  .display { font-family: "Fraunces", Georgia, serif; font-weight: 500; letter-spacing: -0.01em; }
+  .mono { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-dim); }
+  .mono .tick { color: var(--clay); }
+
+  header { position: relative; z-index: 8; max-width: var(--maxw); margin: 0 auto; padding: 26px 28px 0; display: flex; align-items: baseline; justify-content: flex-end; gap: 16px; flex-wrap: wrap; }
+  .funlink { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 11px; letter-spacing: .06em; color: var(--river); border: none; background: none; padding: 2px 0; cursor: pointer; text-decoration: none; transition: color .2s ease, opacity .2s ease; }
+  .funlink:hover, .funlink:focus-visible { color: var(--river-hi); opacity: .85; text-decoration: underline; text-underline-offset: 3px; }
+
+  /* Intro */
+  .intro { max-width: var(--maxw); margin: 0 auto; padding: 28px 28px 22px; }
+  .intro h1 { font-family: "Fraunces", serif; font-weight: 600; font-size: clamp(30px, 4vw, 48px); line-height: 1.06; letter-spacing: -0.01em; margin-top: 10px; color: var(--ink); }
+  .intro-sub { color: var(--ink-dim); font-size: 15px; margin-top: 12px; max-width: 60ch; }
+
+  /* Project tile grid */
+  .project-grid { max-width: var(--maxw); margin: 0 auto; padding: 8px 28px 70px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .tile {
+    display: flex; flex-direction: column; text-align: left; cursor: pointer; width: 100%;
+    background: var(--paper-soft); border: 1px solid var(--line); border-radius: 14px; overflow: hidden;
+    box-shadow: 0 12px 30px -22px rgba(14,76,68,.7);
+    transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+  }
+  .tile:hover { transform: translateY(-3px); border-color: var(--river); box-shadow: 0 18px 36px -20px rgba(14,76,68,.6); }
+  .tile:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+  .tile-thumb { position: relative; display: block; width: 100%; aspect-ratio: 16 / 10; background: var(--paper-deep); }
+  .tile-thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+  .tile-ph { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 14px; text-align: center; font-family: "Fraunces", serif; font-weight: 600; font-size: 18px; color: var(--ink-dim); }
+  .tile-title { padding: 14px 16px; font-family: "Fraunces", serif; font-weight: 600; font-size: 17px; color: var(--ink); }
+
+  /* Modal — same pattern as the CV page */
+  .overlay { position: fixed; inset: 0; z-index: 50; display: none; align-items: center; justify-content: center; background: rgba(22,51,42,0.32); backdrop-filter: blur(4px); padding: 22px; }
+  .overlay.open { display: flex; }
+  .modal {
+    width: min(860px, 100%); max-height: 84vh; overflow: auto;
+    background: var(--paper-soft); border: 1px solid var(--river); border-radius: 16px;
+    padding: 30px 32px; position: relative; animation: rise .3s ease;
+  }
+  @keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+  .modal h3 { font-family: "Fraunces", serif; font-size: 26px; margin-bottom: 4px; color: var(--ink); padding-right: 40px; }
+  .close { position: absolute; top: 14px; right: 14px; width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--line); color: var(--ink-dim); font-size: 16px; line-height: 1; transition: all .2s ease; cursor: pointer; }
+  .close:hover { border-color: var(--clay); color: var(--clay); }
+
+  .pm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 26px; margin-top: 16px; }
+  .pm-section { margin-bottom: 16px; }
+  .pm-label { display: block; margin-bottom: 5px; color: var(--clay); }
+  .pm-text p { color: var(--ink-dim); font-size: 14.5px; margin-bottom: 10px; }
+  .pm-text ul { list-style: none; padding-left: 0; margin: 8px 0; }
+  .pm-text li { color: var(--ink-dim); font-size: 14.5px; margin-bottom: 7px; padding-left: 18px; position: relative; }
+  .pm-text li::before { content: "–"; position: absolute; left: 0; }
+  .pm-frame { position: relative; width: 100%; aspect-ratio: 4 / 3; border-radius: 12px; overflow: hidden; background: var(--paper-deep); border: 1px solid var(--line); }
+  .pm-frame img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .pm-ph { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 14px; text-align: center; font-family: "Fraunces", serif; font-weight: 600; color: var(--ink-dim); }
+  .pm-cta { margin-top: 14px; }
+  .pm-cta a { display: inline-flex; align-items: center; gap: 8px; background: var(--clay); color: var(--paper); font-weight: 600; font-size: 14px; padding: 11px 18px; border-radius: 999px; text-decoration: none; transition: transform .2s ease, background .2s ease; }
+  .pm-cta a:hover { transform: translateY(-1px); background: #A3442A; }
+
+  /* Floating contact buttons — identical to the CV page */
+  .ctabar { position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%); z-index: 40; display: flex; justify-content: center; gap: 12px; padding: 0; background: none; border: none; box-shadow: none; max-width: calc(100% - 28px); }
+  .ctabar a { display: inline-flex; align-items: center; justify-content: center; gap: 9px; min-height: 44px; padding: 9px 18px; border-radius: 999px; text-decoration: none; font-size: 14px; font-weight: 500; color: var(--ink); border: 1.5px solid var(--river); background: var(--paper-soft); box-shadow: 0 0 0 3px rgba(31,138,120,.12), 0 12px 30px -10px rgba(31,138,120,.5); transition: background .2s ease, color .2s ease, border-color .2s ease, transform .2s ease; }
+  .ctabar a:hover, .ctabar a:focus-visible { background: var(--river); border-color: var(--river); color: var(--paper); transform: translateY(-2px); }
+  .ctabar a svg { width: 18px; height: 18px; display: block; flex-shrink: 0; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+    html { scroll-behavior: auto; }
+  }
+
+  @media (max-width: 700px) {
+    .project-grid { grid-template-columns: 1fr; }
+    .pm-grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 600px) {
+    .ctabar-label { display: none; }
+    .ctabar a { padding: 10px; min-width: 44px; }
+  }
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Archivo:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="page">
+
+  <header>
+    <a class="funlink" href="index.html">← Back to the CV</a>
+  </header>
+
+  <section class="intro">
+    <span class="mono"><span class="tick">◆</span> Side projects · built for fun</span>
+    <h1 class="display">Stuff that's a little more interesting</h1>
+    <p class="intro-sub">[placeholder — Tom to refine] A few things I've built outside of work — products, tools and experiments.</p>
+  </section>
+
+  <div class="project-grid" id="projectGrid" aria-label="Projects"></div>
+
+</div>
+
+<!-- Modal -->
+<div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="pmTitle">
+  <div class="modal">
+    <button class="close" id="modalClose" aria-label="Close">✕</button>
+    <h3 id="pmTitle"></h3>
+    <div class="pm-grid">
+      <div class="pm-text" id="pmText"></div>
+      <div class="pm-media">
+        <div class="pm-frame"><span class="pm-ph" id="pmPh"></span><img id="pmImg" alt="" hidden></div>
+        <div class="pm-cta" id="pmCta"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Sticky bottom contact bar -->
+<nav class="ctabar" aria-label="Primary contact actions">
+  <a href="mailto:tomstephens12@gmail.com" aria-label="Email me" title="Email me">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3.5 7 L12 13 L20.5 7"/></svg>
+    <span class="ctabar-label">Email me</span>
+  </a>
+  <a href="https://www.linkedin.com/in/thomas-stephens1" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" title="LinkedIn">
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4.98 3.5C4.98 4.6 4.1 5.5 3 5.5S1 4.6 1 3.5 1.9 1.5 3 1.5s1.98.9 1.98 2zM1.2 21.5h3.6V8.2H1.2v13.3zM8 8.2h3.45v1.82h.05c.48-.9 1.65-1.85 3.4-1.85 3.63 0 4.3 2.39 4.3 5.5v7.83h-3.6v-6.94c0-1.65-.03-3.78-2.3-3.78-2.3 0-2.65 1.8-2.65 3.66v7.06H8V8.2z"/></svg>
+    <span class="ctabar-label">LinkedIn</span>
+  </a>
+  <a href="mailto:tomstephens12@gmail.com?subject=CV%20request&body=Hi%20there%2C%0A%0AI%20found%20your%20website%20and%20would%20love%20to%20know%20more%20about%20your%20experience.%0A%0APlease%20send%20me%20your%20CV.%0A%0AThanks%2C%0A%0A" aria-label="Request my CV" title="Request my CV">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 2 L11 13"/><path d="M22 2 L15 22 L11 13 L2 9 Z"/></svg>
+    <span class="ctabar-label">Request my CV</span>
+  </a>
+</nav>
+
+<script src="projects.js"></script>
+<script>
+/* Guardrail: verify projects.js loaded correctly */
+if (typeof PROJECTS === 'undefined' || !Array.isArray(PROJECTS) || PROJECTS.length === 0) {
+  document.body.innerHTML = '<div style="padding:40px;font-family:sans-serif;max-width:600px;margin:40px auto;border:2px solid #C9442A;border-radius:8px;color:#16332A;background:#F2ECD8"><h2>Content not loaded</h2><p>projects.js is missing, empty, or has a syntax error. Check the browser console (Cmd+Opt+J) for details.</p></div>';
+  throw new Error('PROJECTS failed to load from projects.js');
+}
+
+/* Same lightweight text renderer as index.html: blank lines split paragraphs,
+   "- " lines become a bullet list. (Copied so this page is self-contained.) */
+function renderBody(text) {
+  if (!text) return '';
+  const paragraphs = text.trim().split(/\n\s*\n/);
+  return paragraphs.map(p => {
+    const lines = p.split('\n').map(l => l.trim()).filter(Boolean);
+    if (lines.length && lines.every(l => l.startsWith('- '))) {
+      return '<ul>' + lines.map(l => `<li>${l.slice(2)}</li>`).join('') + '</ul>';
+    }
+    return `<p>${lines.join(' ')}</p>`;
+  }).join('');
+}
+
+const overlay = document.getElementById('overlay');
+const modalClose = document.getElementById('modalClose');
+
+function openProject(p) {
+  document.getElementById('pmTitle').textContent = p.title;
+
+  document.getElementById('pmText').innerHTML = [
+    ['Problem', p.problem],
+    ['Process', p.process],
+    ['Solution', p.solution]
+  ].map(([label, txt]) => `<div class="pm-section"><span class="mono pm-label">${label}</span>${renderBody(txt)}</div>`).join('');
+
+  // Preview image with graceful fallback to a titled placeholder
+  const img = document.getElementById('pmImg');
+  document.getElementById('pmPh').textContent = p.title;
+  img.hidden = true;
+  img.onload = () => { img.hidden = false; };
+  img.onerror = () => { img.hidden = true; };
+  if (p.preview) { img.src = p.preview; } else { img.removeAttribute('src'); }
+
+  // CTA only when present and pointing somewhere
+  const cta = document.getElementById('pmCta');
+  cta.innerHTML = (p.cta && p.cta.url)
+    ? `<a href="${p.cta.url}" target="_blank" rel="noopener noreferrer">${p.cta.label} →</a>`
+    : '';
+
+  overlay.classList.add('open');
+  modalClose.focus();
+}
+function closeModal() { overlay.classList.remove('open'); }
+
+/* Build the tile grid */
+const grid = document.getElementById('projectGrid');
+PROJECTS.forEach(p => {
+  const tile = document.createElement('button');
+  tile.className = 'tile';
+  tile.setAttribute('aria-haspopup', 'dialog');
+  tile.setAttribute('aria-label', p.title);
+
+  const thumb = document.createElement('span');
+  thumb.className = 'tile-thumb';
+  const ph = document.createElement('span');
+  ph.className = 'tile-ph';
+  ph.textContent = p.title;
+  thumb.appendChild(ph);
+  if (p.thumb) {
+    const im = document.createElement('img');
+    im.alt = '';
+    im.addEventListener('error', () => im.remove());   // missing image → placeholder shows, no broken icon
+    im.src = p.thumb;
+    thumb.appendChild(im);
+  }
+  tile.appendChild(thumb);
+
+  const title = document.createElement('span');
+  title.className = 'tile-title';
+  title.textContent = p.title;
+  tile.appendChild(title);
+
+  tile.addEventListener('click', () => openProject(p));
+  grid.appendChild(tile);
+});
+
+modalClose.addEventListener('click', closeModal);
+overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+</script>
+</body>
+</html>
