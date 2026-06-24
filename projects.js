@@ -21,7 +21,7 @@ const PROJECTS = [
     problem: `[placeholder — Tom to refine] Office and friend-group sweepstakes are usually run on paper or messy spreadsheets — fiddly to set up, easy to lose track of.`,
     process: `[placeholder — Tom to refine] Designed and built a web app that runs a World Cup sweepstake end to end, with shareable per-group instances.`,
     solution: `[placeholder — Tom to refine] A live, hosted tool people can spin up and share in seconds.`,
-    cta: { label: "Open the live site", url: "https://worldcupsweepstake.vercel.app/" }
+    cta: { label: "Open the live site", url: "https://worldcupsweepstake.vercel.app/s/example" }
   },
   {
     id: "catanbot",
