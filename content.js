@@ -196,6 +196,7 @@ This is the work I've enjoyed the most. Real ownership over decision making, my 
     title: "AI-driven delivery for a global bank",
     org: "Accenture Song · Global Bank",
     kicker: "AI in delivery",
+    cta: { label: "Find out more", url: "mailto:tomstephens12@gmail.com", icon: "email" },
     icon: `<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><circle cx="8" cy="10" r="2.5"/><circle cx="24" cy="10" r="2.5"/><circle cx="16" cy="24" r="2.5"/><line x1="10" y1="11.5" x2="14.5" y2="22"/><line x1="22" y1="11.5" x2="17.5" y2="22"/><line x1="10.5" y1="10" x2="21.5" y2="10"/></svg>`,
     stats: [
       { value: "25%", label: "fewer bugs" },
@@ -211,6 +212,7 @@ Synthetic personas to support testing. Custom GPTs as user-story interrogators. 
     title: "Conversion lift for a luxury automotive brand",
     org: "Accenture Song · Luxury Global Automotive Brand",
     kicker: "Commerce at scale",
+    cta: { label: "Find out more", url: "mailto:tomstephens12@gmail.com", icon: "email" },
     icon: `<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><circle cx="16" cy="16" r="11"/><circle cx="16" cy="16" r="2.5"/><line x1="16" y1="5" x2="16" y2="13.5"/><line x1="6.5" y1="20.5" x2="13.7" y2="17"/><line x1="25.5" y1="20.5" x2="18.3" y2="17"/></svg>`,
     stats: [
       { value: "15%+", label: "conversion uplift" },
@@ -228,6 +230,7 @@ The product function was a key differentiator in winning the multi $m engagement
     title: "Product Tinker-er",
     org: "Projects Just for Me",
     kicker: "Curiosity and Creativity",
+    cta: { label: "Check out my side-projects...", url: "https://tom-stephens23.github.io/CV/fun.html" },
     icon: `<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><circle cx="16" cy="16" r="11"/><circle cx="16" cy="16" r="6.5"/><circle cx="16" cy="16" r="2" fill="currentColor"/></svg>`,
     stats: [
       { value: "AI-Powered", label: "Claude Code, Claude Design & others..." },
