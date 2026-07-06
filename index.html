@@ -135,7 +135,9 @@
   }
   .fit-cta:hover { transform: translateY(-1px); background: #A3442A; }
 
-  .scrollcue { display: flex; align-items: center; gap: 8px; color: var(--ink-dim); }
+  .scrollcue { display: inline-flex; align-items: center; gap: 8px; color: var(--ink-dim); text-decoration: none; cursor: pointer; width: fit-content; transition: color 0.2s ease; }
+  .scrollcue:hover { color: var(--ink); }
+  .scrollcue:hover .arrow { color: var(--river-hi); }
   .scrollcue .arrow { color: var(--river-hi); animation: drift 2.2s ease-in-out infinite; }
   @keyframes drift { 0%, 100% { transform: translateX(0); } 50% { transform: translateY(4px); } }
 
@@ -257,10 +259,10 @@
 
       <div class="hl-tiles" id="highlights" aria-label="Career highlights"></div>
 
-      <div class="scrollcue">
+      <a class="scrollcue" href="#journey" aria-label="Scroll to the journey section">
         <span class="mono">Follow the river downstream</span>
         <span class="arrow">▼</span>
-      </div>
+      </a>
     </div>
 
     <img class="hero-photo" src="assets/tom.jpg" alt="Tom Stephens">
