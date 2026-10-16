@@ -2,7 +2,7 @@
 
 Personal CV/portfolio site — Amazon river themed, dark rainforest palette, procedural dot-terrain, river-as-timeline.
 
-## Getting started
+## Getting started 
 
 Requires Node 20+ and npm.
 
