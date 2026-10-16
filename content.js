@@ -69,7 +69,7 @@ const TIMELINE = [
     ],
     body: `Client's website needed to evolve from a digital showcase into a high-converting commerce platform. I led end-to-end product across three scrum teams through three Program Increments, shaping discovery, strategy, design direction, backlog, and delivery. The product function was a key differentiator in winning the $90m engagement.
 
-- Little strategic decision making seen. By including CRO and analytics in discovery and prioritisation, championing rapid AB testing, and creating product roadmaps, I contributed to a 15%+ conversion uplift in year one.
+- Little strategic decision making seen. By including CRO and analytics in discovery and prioritisation, championing rapid AB testing, and creating product roadmaps, I contributed to a 5%+ conversion uplift in year one.
 - Design, business, and engineering work were disconnected, slowing delivery. I owned the end-to-end flow, pulling design and engineering into solutioning early, lifting delivery speed by 25% and reducing bugs and rework.
 - Build-then-test cycles were creating wasted technical debt. On a vehicle-match journey I introduced fast iterative AB testing on small audiences, validating direction before committing and discontinuing weaker approaches early.
 - Senior client stakeholders had varying levels of engagement with the product-led approach. I tailored my communication style to individual preferences and built productive working relationships that strengthened demand and pace for the development teams.`
@@ -215,13 +215,13 @@ Synthetic personas to support testing. Custom GPTs as user-story interrogators. 
     cta: { label: "Find out more", url: "mailto:tomstephens12@gmail.com", icon: "email" },
     icon: `<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><circle cx="16" cy="16" r="11"/><circle cx="16" cy="16" r="2.5"/><line x1="16" y1="5" x2="16" y2="13.5"/><line x1="6.5" y1="20.5" x2="13.7" y2="17"/><line x1="25.5" y1="20.5" x2="18.3" y2="17"/></svg>`,
     stats: [
-      { value: "15%+", label: "conversion uplift" },
+      { value: "5%+", label: "conversion uplift" },
       { value: "25%", label: "delivery speed lift" },
       { value: "multi $m", label: "engagement won" }
     ],
     body: `The client needed their website to evolve from a digital showcase into a high-converting commerce platform. I led product strategy, discovery and delivery across three scrum teams through three Program Increments.
 
-By bringing CRO and analytics into discovery and prioritisation and championing rapid AB testing, the team contributed to a 15%+ conversion uplift in year one. By pulling design and engineering into solutioning early, delivery speed lifted 25%.
+By bringing CRO and analytics into discovery and prioritisation and championing rapid AB testing, the team contributed to a 5%+ conversion uplift in year one. By pulling design and engineering into solutioning early, delivery speed lifted 25%.
 
 The product function was a key differentiator in winning the multi $m engagement that followed.`
   },
