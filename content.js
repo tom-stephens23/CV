@@ -63,7 +63,7 @@ const TIMELINE = [
     logo: "accenture",
     kind: "work",
     stats: [
-      { value: "15%+", label: "conversion uplift" },
+      { value: "5%+", label: "conversion uplift" },
       { value: "25%", label: "delivery speed lift" },
       { value: "Multi $m", label: "engagement won" }
     ],
